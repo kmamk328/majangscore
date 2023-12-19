@@ -50,7 +50,7 @@ const App = () => {
     const newTableData = tableData.map(row => {
       // 最後のセル ('✔️') を除外してプレイヤーセルを更新
       let newRow = row.slice(0, playerCount);
-      // 新しいプレイヤー数に合わせてセルを追加または削除
+      // 新しいプレイヤー数に合わせてセルを追加または削除s
       newRow = [...newRow.slice(0, newPlayerCount), ...Array(newPlayerCount - newRow.length).fill('')];
       // 最後に '✔️' を追加
       newRow.push('✔️');

@@ -4,7 +4,7 @@ import { Table, Row, Rows } from 'react-native-table-component';
 
 const App = () => {
   const [playerCount, setPlayerCount] = useState(4);
-  const tableHead = ['No.', ...Array.from({ length: playerCount }, (_, i) => `プレイヤー${i + 1}`), '人数追加'];
+  const [tableHead, setTableHead] = useState(['No.', ...Array.from({ length: playerCount }, (_, i) => `プレイヤー${i + 1}`), '人数追加']);
   const [tableData, setTableData] = useState([
     ['1', ...Array(playerCount).fill(''), '✔️'],
     ['2', ...Array(playerCount).fill(''), '✔️'],
@@ -34,35 +34,66 @@ const App = () => {
     setTableData([...tableData, newRow]);
   };
 
-  const tableFooter = [
-    ['計', ...Array(playerCount).fill('0'), ''],
-    ['チップ', ...Array(playerCount).fill('0'), ''],
+  const [tableFooter, setTableFooter] = useState([
+    ['計', ...Array(playerCount).fill('0'), 'M'],
+    ['チップ', ...Array(playerCount).fill('0'), 'M'],
     ['収支', ...Array(playerCount).fill('0'), '']
-  ];
+  ]);
+  
 
-  const updateScoresForPlayerCount = (newPlayerCount: number) => {
-    // スコア配列を新しいプレイヤー数に基づいて更新
-    const newScores = scores.map(row =>
-      row.length > newPlayerCount ? row.slice(0, newPlayerCount) : [...row, ...Array(newPlayerCount - row.length).fill(0)]
-    );
-
-    // テーブルデータを新しいプレイヤー数に基づいて更新
+  {/*const updateScoresForPlayerCount = (newPlayerCount: number) => {
+    // 新しいtableHeadを作成します。
+    const newTableHead = ['No.', ...Array.from({ length: newPlayerCount }, (_, i) => `プレイヤー${i + 1}`), '人数追加'];
+  
+    // 新しいスコア配列を作成します。
+    const newScores = scores.map(row => {
+      const newRow = row.slice(0, newPlayerCount);
+      return newRow.concat(Array(Math.max(newPlayerCount - newRow.length, 0)).fill(0));
+    });
+  
+    // 新しいテーブルデータを作成します。
     const newTableData = tableData.map(row => {
-      // 最後のセル ('✔️') を除外してプレイヤーセルを更新
-      let newRow = row.slice(0, playerCount);
-      // 新しいプレイヤー数に合わせてセルを追加または削除s
-      newRow = [...newRow.slice(0, newPlayerCount), ...Array(newPlayerCount - newRow.length).fill('')];
-      // 最後に '✔️' を追加
-      newRow.push('✔️');
+      const newRow = row.slice(0, newPlayerCount);
+      return newRow.concat(Array(Math.max(newPlayerCount - newRow.length, 0)).fill(''), '✔️');
+    });
+  
+    // ステートを更新します。
+    setPlayerCount(newPlayerCount);
+    setScores(newScores);
+    setTableData(newTableData);
+    setTableHead(newTableHead); // この行を追加
+    setChips(chips.length > newPlayerCount ? chips.slice(0, newPlayerCount) : chips.concat(Array(newPlayerCount - chips.length).fill(0)));
+  };*/}
+  const updateScoresForPlayerCount = (newPlayerCount: number) => {
+    // 新しいプレイヤーヘッドを作成
+    const newTableHead = ['No.', ...Array.from({ length: newPlayerCount }, (_, i) => `プレイヤー${i + 1}`), '人数追加'];
+  
+    // 新しいテーブルデータを作成
+    const newTableData = tableData.map((row) => {
+      const newRow = [...row.slice(0, newPlayerCount), ...Array(newPlayerCount - row.length + 1).fill('')];
+      newRow[newPlayerCount + 1] = row[row.length - 1]; // 最後のチェックマークを再配置
       return newRow;
     });
-
-    setPlayerCount(newPlayerCount); // プレイヤー数の状態を更新
-    setScores(newScores); // スコアの状態を更新
-    setTableData(newTableData); // テーブルデータの状態を更新
-    setChips(newPlayerCount > chips.length ? [...chips, ...Array(newPlayerCount - chips.length).fill(0)] : chips.slice(0, newPlayerCount)); // チップ配列も更新
+  
+    // 新しいフッターデータを作成
+    const newTableFooter = tableFooter.map((row) => {
+      if (row.includes('計') || row.includes('収支')) {
+        // 計と収支の行はスコアの合計を表示するため、空のセルを'0'で埋める
+        return [...row.slice(0, newPlayerCount + 1), ...Array(newPlayerCount - row.length + 1).fill('0')];
+      } else {
+        // チップの行はテキストインプットのため、空のセルを''で埋める
+        return [...row.slice(0, newPlayerCount + 1), ...Array(newPlayerCount - row.length + 1).fill('C')];
+      }
+    });
+  
+    // ステートを更新
+    setTableHead(newTableHead);
+    setTableData(newTableData);
+    setTableFooter(newTableFooter);
+    setPlayerCount(newPlayerCount); // 最後にプレイヤー数のステートを更新
   };
-
+  
+  
 
 
   const showPlayerCountSelection = () => {

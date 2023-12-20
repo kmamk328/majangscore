@@ -35,35 +35,35 @@ const App = () => {
   };
 
   const [tableFooter, setTableFooter] = useState([
-    ['計', ...Array(playerCount).fill('0'), 'M'],
-    ['チップ', ...Array(playerCount).fill('0'), 'M'],
-    ['収支', ...Array(playerCount).fill('0'), '']
+    ['計', ...Array(playerCount).fill('0'), 'a'],
+    ['チップ', ...Array(playerCount).fill('0'), 'a'],
+    ['収支', ...Array(playerCount).fill('0'), 'ab']
   ]);
   
 
-  {/*const updateScoresForPlayerCount = (newPlayerCount: number) => {
-    // 新しいtableHeadを作成します。
-    const newTableHead = ['No.', ...Array.from({ length: newPlayerCount }, (_, i) => `プレイヤー${i + 1}`), '人数追加'];
+  // const updateScoresForPlayerCount = (newPlayerCount: number) => {
+  //   // 新しいtableHeadを作成します。
+  //   const newTableHead = ['No.', ...Array.from({ length: newPlayerCount }, (_, i) => `プレイヤー${i + 1}`), '人数追加'];
   
-    // 新しいスコア配列を作成します。
-    const newScores = scores.map(row => {
-      const newRow = row.slice(0, newPlayerCount);
-      return newRow.concat(Array(Math.max(newPlayerCount - newRow.length, 0)).fill(0));
-    });
+  //   // 新しいスコア配列を作成します。
+  //   const newScores = scores.map(row => {
+  //     const newRow = row.slice(0, newPlayerCount);
+  //     return newRow.concat(Array(Math.max(newPlayerCount - newRow.length, 0)).fill(0));
+  //   });
   
-    // 新しいテーブルデータを作成します。
-    const newTableData = tableData.map(row => {
-      const newRow = row.slice(0, newPlayerCount);
-      return newRow.concat(Array(Math.max(newPlayerCount - newRow.length, 0)).fill(''), '✔️');
-    });
+  //   // 新しいテーブルデータを作成します。
+  //   const newTableData = tableData.map(row => {
+  //     const newRow = row.slice(0, newPlayerCount);
+  //     return newRow.concat(Array(Math.max(newPlayerCount - newRow.length, 0)).fill(''), '✔️');
+  //   });
   
-    // ステートを更新します。
-    setPlayerCount(newPlayerCount);
-    setScores(newScores);
-    setTableData(newTableData);
-    setTableHead(newTableHead); // この行を追加
-    setChips(chips.length > newPlayerCount ? chips.slice(0, newPlayerCount) : chips.concat(Array(newPlayerCount - chips.length).fill(0)));
-  };*/}
+  //   // ステートを更新します。
+  //   setPlayerCount(newPlayerCount);
+  //   setScores(newScores);
+  //   setTableData(newTableData);
+  //   setTableHead(newTableHead); // この行を追加
+  //   setChips(chips.length > newPlayerCount ? chips.slice(0, newPlayerCount) : chips.concat(Array(newPlayerCount - chips.length).fill(0)));
+  // };
   const updateScoresForPlayerCount = (newPlayerCount: number) => {
     // 新しいプレイヤーヘッドを作成
     const newTableHead = ['No.', ...Array.from({ length: newPlayerCount }, (_, i) => `プレイヤー${i + 1}`), '人数追加'];
@@ -74,17 +74,19 @@ const App = () => {
       newRow[newPlayerCount + 1] = row[row.length - 1]; // 最後のチェックマークを再配置
       return newRow;
     });
+    // 新しいチップ配列を作成
+    const newChips = [...chips];
+    while (newChips.length < newPlayerCount + 1) {
+      newChips.push(0); // 不足分を0で埋める
+    }
   
     // 新しいフッターデータを作成
     const newTableFooter = tableFooter.map((row) => {
-      if (row.includes('計') || row.includes('収支')) {
-        // 計と収支の行はスコアの合計を表示するため、空のセルを'0'で埋める
-        return [...row.slice(0, newPlayerCount + 1), ...Array(newPlayerCount - row.length + 1).fill('0')];
-      } else {
-        // チップの行はテキストインプットのため、空のセルを''で埋める
-        return [...row.slice(0, newPlayerCount + 1), ...Array(newPlayerCount - row.length + 1).fill('C')];
-      }
+      const newRow = [...row.slice(0, newPlayerCount), ...Array(newPlayerCount - row.length + 1).fill('')];
+      newRow[newPlayerCount + 1] = row[row.length - 1]; // 最後のチェックマークを再配置
+      return newRow;
     });
+  
   
     // ステートを更新
     setTableHead(newTableHead);

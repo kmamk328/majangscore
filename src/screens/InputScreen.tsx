@@ -114,15 +114,15 @@ const InputScreen = ({ route }) => {
       flex: 1,
       padding: 0,
       paddingTop: 0,
-      backgroundColor: '#f1f8ff'
+      backgroundColor: '#FFFFFF'
     },
     safeArea: {
       flex: 1,
-      backgroundColor: '#f1f8ff'
+      backgroundColor: '#FFFFFF'
     },
     head: {
       height: 40,
-      backgroundColor: '#f1f8ff'
+      backgroundColor: '#FFFFFF'
     },
     text: {
       margin: 1
@@ -130,12 +130,12 @@ const InputScreen = ({ route }) => {
     row: {
       height: 70,
       flexDirection: 'row',
-      backgroundColor: '#f1f8ff'
+      backgroundColor: '#FFFFFF'
     },
     footer: {
       height: 50,
       flexDirection: 'row',
-      backgroundColor: '#f1f8ff'
+      backgroundColor: '#FFFFFF'
     },
     cell: {
       flex: 1,

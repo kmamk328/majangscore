@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, SafeAreaView } from 'react-native';
-import firebase from 'firebase';
+//import firebase from 'firebase';
 
 const HistoryScreen = () => {
   // データの取得と表示に関するロジックはここに実装

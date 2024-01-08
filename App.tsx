@@ -4,7 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HistoryScreen from './src/screens/HistoryScreen';
 import SelectGameScreen from './src/screens/SelectGameScreen';
 import AccountScreen from './src/screens/AccountScreen';
-import InputScreen from './src/screens/InputScreen';
+import InputScreen from './src/screens/InputScoreScreen';
 import RuleScreen from './src/screens/RuleScreen';
 
 const Tab = createBottomTabNavigator();

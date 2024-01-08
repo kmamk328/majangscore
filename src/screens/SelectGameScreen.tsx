@@ -4,7 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { View, Text, SafeAreaView, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-import InputScreen from './InputScreen';
+import InputScreen from './InputScoreScreen';
 
 const Stack = createStackNavigator();
 

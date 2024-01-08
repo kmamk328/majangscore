@@ -1,13 +1,31 @@
 
 import { Dimensions } from 'react-native';
 import React, { useState } from 'react';
-import { View, Text, SafeAreaView, TouchableOpacity, Button, ScrollView, TextInput, StyleSheet } from 'react-native';
+import { View, Text, SafeAreaView, TouchableOpacity, Button, ScrollView, TextInput, StyleSheet, Modal } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Table, Row, Rows } from 'react-native-table-component';
+import { createStackNavigator } from '@react-navigation/stack';
 
+import CustomKeyboard from '../components/CustomKeyboard';
+
+
+import RuleScreen from './RuleScreen';
+
+const Stack = createStackNavigator();
+
+
+const InputScoreStack = () => (
+  <Stack.Navigator>
+    <Stack.Screen name="InputScreen" component={InputScreen} />
+    <Stack.Screen name="RuleScreen" component={RuleScreen} />
+  </Stack.Navigator>
+);
 
 const InputScreen = ({ route }) => {
   const navigation = useNavigation();
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [activeInput, setActiveInput] = useState<{rowIndex: number | null, cellIndex: number | null}>({rowIndex: null, cellIndex: null});
+
 
   React.useLayoutEffect(() => {
     // 遷移元が 'SelectGameScreen' の場合、ヘッダーを非表示にする
@@ -17,7 +35,7 @@ const InputScreen = ({ route }) => {
       navigation.setOptions({
         headerRight: () => (
           <Button
-            onPress={() => {/* 設定画面への遷移ロジック */}}
+          onPress={() => navigation.navigate('RuleScreen')}
             title="設定"
           />
         ),
@@ -25,7 +43,6 @@ const InputScreen = ({ route }) => {
     }
   }, [navigation, route.params]);
 
-  // スコア入力に関するロジックはここに実装
   const numberOfPlayers = 4;
   const initialRowData = Array(numberOfPlayers).fill("").map((_, index) => [`${index + 1}`, "", "", "", ""]);
 
@@ -38,14 +55,6 @@ const InputScreen = ({ route }) => {
     setTableData(updatedData);
   };
 
-  // テーブルのヘッダーと列の幅
-  //const tableHead = ['No.', 'name1', 'name2', 'name3', 'name4'];
-  //const widthArr = [50, 80, 80, 80, 80];
-  //const tableSum = ['計', 0, 0, 0, 0];
-  //const tableChip = ['チップ', 0, 0, 0, 0];
-  //const tableTotal = ['収支', 0, 0, 0, 0];
-  //const tableIncludeGamePrice = ['場代込', 0, 0, 0, 0];
-
   const [playerCount, setPlayerCount] = useState(4);
   const [tableHead, setTableHead] = useState(['No.', ...Array.from({ length: playerCount }, (_, i) => `name${i + 1}`)]);
   const [tableData, setTableData] = useState([
@@ -56,6 +65,8 @@ const InputScreen = ({ route }) => {
   ]);
   const [scores, setScores] = useState(Array.from({ length: 6 }, () => Array(playerCount).fill(0)));
   const [chips, setChips] = useState(Array(playerCount).fill(0));
+  const [customKeyboardValue, setCustomKeyboardValue] = useState('');
+
   const handleScoreChange = (rowIndex: number, playerIndex: number, value: string) => {
     const updatedScores = scores.map((row, i) =>
       i === rowIndex ? row.map((cell, j) => (j === playerIndex ? parseInt(value, 10) : cell)) : row
@@ -66,6 +77,16 @@ const InputScreen = ({ route }) => {
   const handleChipChange = (playerIndex: number, value: string) => {
     const updatedChips = chips.map((chip, index) => (index === playerIndex ? parseInt(value, 10) : chip));
     setChips(updatedChips);
+  };
+
+  const handleKeyPress = (key) => {
+    if (activeInput.rowIndex != null && activeInput.cellIndex != null) {
+      const newScores = [...scores];
+      const currentScore = newScores[activeInput.rowIndex][activeInput.cellIndex] || '';
+      newScores[activeInput.rowIndex][activeInput.cellIndex] = currentScore + key;
+      setScores(newScores);
+      setKeyboardVisible(false); // キー入力後にキーボードを非表示
+    }
   };
 
 
@@ -142,6 +163,50 @@ React.useEffect(() => {
     ))
   );
 
+  const handleHeaderChange = (text, index) => {
+    const newTableHead = [...tableHead];
+    newTableHead[index] = text;
+    setTableHead(newTableHead);
+  };
+
+  const renderEditableTableHead = () => {
+    return tableHead.map((header, index) => {
+      if (header === 'No.') {
+        // 'No.' の場合は編集不可能なテキストとして表示
+        return <Text key={index} style={styles.headerText}>{header}</Text>;
+      } else {
+        // それ以外のヘッダーは編集可能な TextInput
+        return (
+          <TextInput
+            key={index}
+            value={header}
+            onChangeText={(text) => handleHeaderChange(text, index)}
+            style={styles.headerInput}
+          />
+        );
+      }
+    });
+  };
+  // スコア入力のための TextInput をレンダリング
+  const renderScoreInputs = (rowData, rowIndex) => {
+    return rowData.map((cell, cellIndex) => {
+      if (cellIndex > 0 && cellIndex < playerCount + 1) {
+        const scoreValue = scores[rowIndex] && scores[rowIndex][cellIndex - 1] !== undefined
+          ? scores[rowIndex][cellIndex - 1].toString()
+          : '0';
+        return (
+          <TextInput
+            style={styles.input}
+            keyboardType="numeric"
+            onChangeText={(value) => handleScoreChange(rowIndex, cellIndex - 1, value)}
+            value={scoreValue}
+          />
+        );
+      }
+      return cell;
+    });
+  };
+
   const screenWidth = Dimensions.get('window').width;
 
 
@@ -150,11 +215,7 @@ React.useEffect(() => {
 
 
       <Table borderStyle={styles.tableBorder}>
-        <Row
-          data={tableHead}
-          widthArr={Array(tableHead.length).fill(screenWidth / tableHead.length)}
-          style={styles.head}
-          textStyle={styles.text}/>
+        <Row data={renderEditableTableHead()} />
       </Table>
 
       <ScrollView style={styles.container}>
@@ -163,26 +224,19 @@ React.useEffect(() => {
           {tableData.map((rowData, rowIndex) => (
             <Row
               key={rowIndex}
-              data={rowData.map((cell, cellIndex) => {
-                if (cellIndex > 0 && cellIndex < playerCount + 1) {
-                  const scoreValue = scores[rowIndex] && scores[rowIndex][cellIndex - 1] !== undefined
-                    ? scores[rowIndex][cellIndex - 1].toString()
-                    : '0';
-                  return (
-                    <TextInput
-                      style={styles.input}
-                      keyboardType="numeric"
-                      onChangeText={(value) => handleScoreChange(rowIndex, cellIndex - 1, value)}
-                      value={scoreValue}
-                    />
-                  );
-                }
-                return cell;
-              })}
+              data={renderScoreInputs(rowData, rowIndex)}
               textStyle={styles.text}
             />
           ))}
         </Table>
+        <Modal
+          animationType="slide"
+          transparent={false}
+          visible={keyboardVisible}
+          onRequestClose={() => setKeyboardVisible(false)}
+        >
+          <CustomKeyboard onKeyPress={handleKeyPress} />
+        </Modal>
 
         <TouchableOpacity style={styles.addRowBanner} onPress={addRow}>
           <Text style={styles.addRowText}>行を追加</Text>
@@ -246,8 +300,13 @@ React.useEffect(() => {
                   <TextInput
                     style={styles.input}
                     keyboardType="numeric"
-                    onChangeText={(value) => handleChipChange(cellIndex - 1, value)}
-                    value={chipValue}
+                    onChangeText={(value) => {
+                      handleScoreChange(rowIndex, cellIndex - 1, value);
+                      setCustomKeyboardValue(value); // CustomKeyboardで入力された値を保持
+                    }}
+                    value={customKeyboardValue} // CustomKeyboardで入力された値を表示
+                    //onChangeText={(value) => handleChipChange(cellIndex - 1, value)}
+                    //value={chipValue}
                   />
                 );
               } else if (rowIndex === 2 && cellIndex > 0 && cellIndex <= playerCount) {
@@ -270,9 +329,8 @@ React.useEffect(() => {
         <Text style={styles.advertisementText}>広告</Text>
       </View>
 
-
-
     </SafeAreaView>
+
   );
 };
 
@@ -295,6 +353,10 @@ React.useEffect(() => {
     tableBorder: {
       borderWidth: 0.5
     },
+    headerText: {
+      margin: 1,
+      textAlign: 'center'
+    },
     text: {
       margin: 1,
       textAlign: 'center'
@@ -313,6 +375,14 @@ React.useEffect(() => {
       flex: 1,
       alignSelf: 'center'
     },
+    headerInput: {
+      borderWidth: 1,
+      borderColor: '#ccc',
+      padding: 10,
+      margin: 5,
+      textAlign: 'center'
+    },
+
     input: {
       borderWidth: 1,
       borderColor: '#ccc',

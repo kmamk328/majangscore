@@ -16,12 +16,12 @@ const Stack = createStackNavigator();
 
 const InputScoreStack = () => (
   <Stack.Navigator>
-    <Stack.Screen name="InputScreen" component={InputScreen} />
+    <Stack.Screen name="InputScoreScreen" component={InputScoreScreen} />
     <Stack.Screen name="RuleScreen" component={RuleScreen} />
   </Stack.Navigator>
 );
 
-const InputScreen = ({ route }) => {
+const InputScoreScreen = ({ route }) => {
   const navigation = useNavigation();
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [activeInput, setActiveInput] = useState<{rowIndex: number | null, cellIndex: number | null}>({rowIndex: null, cellIndex: null});
@@ -412,4 +412,4 @@ React.useEffect(() => {
     },
   });
 
-export default InputScreen;
+export default InputScoreScreen;

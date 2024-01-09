@@ -37,3 +37,6 @@ yarn-error.*
 #chatgpt用
 chatgpt.txt
 Untitled-1.yml
+
+#firebaseConfig
+env.tsx

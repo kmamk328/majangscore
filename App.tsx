@@ -2,6 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
+import { NativeBaseProvider } from 'native-base';
 import firebase from 'firebase';
 
 import HistoryScreen from './src/screens/HistoryScreen';
@@ -26,6 +27,7 @@ const SelectGameStackNavigator = () => (
 );
 const App = () => {
   return (
+    <NativeBaseProvider>
     <NavigationContainer>
       <Tab.Navigator>
         <Tab.Screen name="りれき" component={HistoryScreen} />
@@ -38,6 +40,7 @@ const App = () => {
 
 
     </NavigationContainer>
+    </NativeBaseProvider>
   );
 };
 

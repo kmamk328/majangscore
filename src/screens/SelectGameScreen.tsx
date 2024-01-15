@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     textShadowColor:'rgba(0,0,0,0.5)',
     textShadowOffset: { width: 3, height: 3 },
-    textShadowRadius: 4,
+    // textShadowRadius: 0,
   },
 });
 

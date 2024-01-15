@@ -1,6 +1,6 @@
 import React, { useState, Component, useEffect } from 'react';
 import { Select, FormControl, CheckIcon, WarningOutlineIcon, Center } from "native-base";
-import { View, Text, SafeAreaView, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, SafeAreaView, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import firebase from 'firebase/app';
 import { initializeApp, getApps } from 'firebase/app';
@@ -31,19 +31,20 @@ const RuleScreen = () => {
 
   const [deviceId, setDeviceId] = useState('');
 
-  useEffect(() => {
-    const fetchDeviceId = async () => {
-      const id = await DeviceInfo.getUniqueId();
-      setDeviceId(id);
-    };
-    fetchDeviceId();
-  }, []);
+  // useEffect(() => {
+  //   const fetchDeviceId = async () => {
+  //     const id = await DeviceInfo.getUniqueId();
+  //     setDeviceId(id);
+  //   };
+  //   fetchDeviceId();
+  // }, []);
 
   const saveToFirebase = async () => {
     try {
       const db = getFirestore();
       const scoresRef = collection(db, 'scores');
-      const selectedPointsRef = doc(scoresRef, 'E6fisDXTmbaLxd4TkVN5', 'selectedPoints', deviceId);
+      // const selectedPointsRef = doc(scoresRef, 'E6fisDXTmbaLxd4TkVN5', 'selectedPoints', deviceId);
+      const selectedPointsRef = doc(scoresRef, 'E6fisDXTmbaLxd4TkVN5');
       await setDoc(selectedPointsRef, {
         selectedPoints,
         selectedReturnPoints,
@@ -60,6 +61,7 @@ const RuleScreen = () => {
   };
 
   return (
+    <ScrollView contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}>
     <Center>
       <FormControl w="3/4" maxW="300">
       <FormControl.Label>持ち点</FormControl.Label>
@@ -224,6 +226,7 @@ const RuleScreen = () => {
       </TouchableOpacity>
 
     </Center>
+    </ScrollView>
   );
 };
 

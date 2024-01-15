@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, SafeAreaView, StyleSheet, Alert, FlatList, StatusBar, } from 'react-native';
 import firebase from 'firebase';
+import { Card } from '@rneui/themed';
 
 require('firebase/firestore');
 

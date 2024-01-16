@@ -12,7 +12,7 @@ const SelectGameScreen = ( props ) => {
   const { navigation } = props;
 
   const navigationItems = [
-    { label: '持ち点入力', screen: 'InputScoreScreen' },
+    { label: '持ち点入力', screen: 'InputHaveScoreScreen' },
     { label: 'スコア入力', screen: 'InputScoreScreen' },
   ];
 

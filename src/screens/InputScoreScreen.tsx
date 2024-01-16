@@ -21,7 +21,7 @@ const InputScoreStack = () => (
   </Stack.Navigator>
 );
 
-const InputScoreScreen = ({ route }) => {
+const InputScoreScreen = ({ route }: { route: any }) => {
   const navigation = useNavigation();
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [activeInput, setActiveInput] = useState<{rowIndex: number | null, cellIndex: number | null}>({rowIndex: null, cellIndex: null});
@@ -48,13 +48,6 @@ const InputScoreScreen = ({ route }) => {
 
   //const [tableData, setTableData] = useState(initialRowData);
 
-  // テキスト変更時のハンドラ
-  const handleChangeText = (text: string, row: number, col: number) => {
-    const updatedData = [...tableData];
-    updatedData[row][col] = text;
-    setTableData(updatedData);
-  };
-
   const [playerCount, setPlayerCount] = useState(4);
   const [tableHead, setTableHead] = useState(['No.', ...Array.from({ length: playerCount }, (_, i) => `name${i + 1}`)]);
   const [tableData, setTableData] = useState([
@@ -65,28 +58,29 @@ const InputScoreScreen = ({ route }) => {
   ]);
   const [scores, setScores] = useState(Array.from({ length: 6 }, () => Array(playerCount).fill(0)));
   const [chips, setChips] = useState(Array(playerCount).fill(0));
-  const [customKeyboardValue, setCustomKeyboardValue] = useState('');
 
-  // const handleScoreChange = (rowIndex: number, playerIndex: number, value: string) => {
-  //   const updatedScores = scores.map((row, i) =>
-  //     i === rowIndex ? row.map((cell, j) => (j === playerIndex ? parseInt(value, 10) : cell)) : row
-  //   );
-  //   setScores(updatedScores);
-  // };
-    // const handleScoreChange = (rowIndex: number, playerIndex: number, value: string) => {
-    const handleScoreChange = (rowIndex, playerIndex, value) => {
+  // テキスト変更時のハンドラ
+  const handleChangeText = (text: string, row: number, col: number) => {
+    const updatedData = [...tableData];
+    updatedData[row][col] = text;
+    setTableData(updatedData);
+  };
 
+  const [temporaryValue, setTemporaryValue] = useState('');
+
+  const handleScoreChange = (rowIndex: number, playerIndex: number, value: string) => {
     const updatedScores = scores.map((row, i) =>
+      // i === rowIndex ? row.map((cell, j) => (j === playerIndex ? parseInt(value, 10) : cell)) : row
       i === rowIndex ? row.map((cell, j) => (j === playerIndex ? parseInt(value, 10) : cell)) : row
-    );
+      );
     setScores(updatedScores);
+    // setScores(temporaryValue);
+    setKeyboardVisible(false); // キー入力後にキーボードを非表示
+
   };
 
 
-  // const handleChipChange = (playerIndex: number, value: string) => {
-  //   const updatedChips = chips.map((chip, index) => (index === playerIndex ? parseInt(value, 10) : chip));
-  //   setChips(updatedChips);
-  // };
+
   const handleChipChange = (playerIndex: number, value: string) => {
     const updatedChips = chips.map((chip, index) =>
       index === playerIndex ? parseInt(value, 10) : chip
@@ -101,35 +95,12 @@ const InputScoreScreen = ({ route }) => {
 
   };
 
-  const handleKeyPress = (key: string) => {
-    if (activeInput.rowIndex != null && activeInput.cellIndex != null) {
-      const newScores = [...scores];
-      const currentScore = newScores[activeInput.rowIndex][activeInput.cellIndex] || '';
-      newScores[activeInput.rowIndex][activeInput.cellIndex] = currentScore + key;
-      setScores(newScores);
-      setKeyboardVisible(false); // キー入力後にキーボードを非表示
-    }
-  };
-
-
   const addRow = () => {
     const newRowNumber = tableData.length + 1;
     const newRow = [`${newRowNumber}`, ...Array(playerCount).fill('')];
     setTableData([...tableData, newRow]);
   };
 
-  // const [ tableSum, setTableSum] = useState([
-  //   ['計', ...Array(playerCount).fill('0')],
-  // ]);
-  // const [ tableChip, setTableChip] = useState([
-  //   ['チップ', ...Array(playerCount).fill('0')],
-  // ]);
-  // const [ tableTotal, setTableTotal] = useState([
-  //   ['収支', ...Array(playerCount).fill('0')],
-  // ]);
-  // const [ tableIncludeGamePrice, setIncludeGamePrice] = useState([
-  //   ['場代込', ...Array(playerCount).fill('0')]
-  // ]);
 
   const [tableFooter, setTableFooter] = useState([
     ['計', ...Array(playerCount).fill('0')],
@@ -160,6 +131,7 @@ React.useEffect(() => {
 
   setTableFooter(updatedTableFooter);
 }, [tableData, playerCount]);
+
 
 
   // 編集可能なセルをレンダリング
@@ -219,13 +191,13 @@ React.useEffect(() => {
         const scoreValue = score !== undefined && !isNaN(score)
           ? score.toString()
           : '0';
-        const handleTextChange = (value) => {
+        const handleTextChange = (value: string) => {
           // 符号で始まる入力を許可するロジック
           if (value === '-' || value === '+') {
             handleScoreChange(rowIndex, cellIndex - 1, value);
           } else if (!isNaN(value) && value.trim() !== '') {
             // 数値のみを処理
-            handleScoreChange(rowIndex, cellIndex - 1, parseFloat(value));
+            handleScoreChange(rowIndex, cellIndex - 1, parseInt(value, 10).toString());
           }
           // それ以外の場合（無効な入力）では何もしない
         };
@@ -235,6 +207,8 @@ React.useEffect(() => {
             style={styles.input}
             keyboardType={Platform.OS === 'ios' ? 'numbers-and-punctuation' : 'numeric'}
             onChangeText={handleTextChange}
+            // onChangeText={(value) => setTemporaryValue(value)} // 一時的な値を状態に保存
+            // onEndEditing={() => handleTextChange(temporaryValue)} // 入力終了時に値を処理
             value={scoreValue}
             onFocus={() => setActiveInput({ rowIndex, cellIndex: cellIndex - 1 })}
           />
@@ -255,7 +229,7 @@ React.useEffect(() => {
       </Table>
 
       <ScrollView style={styles.container}>
-      <TouchableOpacity>
+      {/* <TouchableOpacity> */}
         <Table borderStyle={styles.tableBorder}>
           {tableData.map((rowData, rowIndex) => (
             <Row
@@ -265,61 +239,12 @@ React.useEffect(() => {
             />
           ))}
         </Table>
-        </TouchableOpacity>
-        {/* <Modal
-          animationType="slide"
-          transparent={false}
-          visible={keyboardVisible}
-          onRequestClose={() => setKeyboardVisible(false)}
-        >
-          <CustomKeyboard onKeyPress={handleKeyPress} />
-        </Modal> */}
+        {/* </TouchableOpacity> */}
 
         <TouchableOpacity style={styles.addRowBanner} onPress={addRow}>
           <Text style={styles.addRowText}>行を追加</Text>
         </TouchableOpacity>
       </ScrollView>
-
-{/*
-      <Table borderStyle={styles.tableBorder}>
-        <Row
-          data={tableSum}
-          widthArr={Array(tableHead.length).fill(screenWidth / tableHead.length)}
-          style={styles.footer}
-          textStyle={styles.text}/>
-      </Table>
-      <Table borderStyle={styles.tableBorder}>
-        <Row
-          data={tableChip}
-          widthArr={Array(tableHead.length).fill(screenWidth / tableHead.length)}
-          style={styles.footer}
-          textStyle={styles.text}/>
-      </Table>
-      <Table borderStyle={styles.tableBorder}>
-        <Row
-          data={tableTotal}
-          widthArr={Array(tableHead.length).fill(screenWidth / tableHead.length)}
-          style={styles.footer}
-          textStyle={styles.text}/>
-      </Table>
-      <Table borderStyle={styles.tableBorder}>
-        <Row
-          data={tableIncludeGamePrice}
-          widthArr={Array(tableHead.length).fill(screenWidth / tableHead.length)}
-          style={styles.footer}
-          textStyle={styles.text}/>
-      </Table>
-*/}
-{/*
-      <Table borderStyle={styles.tableBorder}>
-        <Rows
-          data={tableFooter}
-          widthArr={Array(tableHead.length).fill(screenWidth / tableHead.length)}
-          style={styles.footer}
-          textStyle={styles.text}/>
-      </Table>
-*/}
-
       <Table borderStyle={styles.tableBorder}>
         <Rows
           style={styles.footer}
@@ -337,24 +262,10 @@ React.useEffect(() => {
                   <TextInput
                     style={styles.input}
                     keyboardType={Platform.OS === 'ios' ? 'numbers-and-punctuation' : 'numeric'}
-                    // onChangeText={(value) => {
-                    //   handleChipChange(cellIndex - 1, value);
-                    //   setCustomKeyboardValue(value); // CustomKeyboardで入力された値を保持
-                    // }}
-                    // value={customKeyboardValue} // CustomKeyboardで入力された値を表示
                     onChangeText={(value) => handleChipChange(cellIndex - 1, value)}
                     value={chipValue !== undefined && !isNaN(chipValue) ? chipValue.toString() : '0'}
                     />
-                  // <TextInput
-                  //   key={cellIndex}
-                  //   style={styles.input}
-                  //   keyboardType="numeric"
-                  //   value={chipValue.toString()}
-                  //   onChangeText={(value) => {
-                  //     handleChipChange(cellIndex-1, value);
-                  //     setCustomKeyboardValue(value);
-                  //   }}
-                  // />
+
                 );
               } else if (rowIndex === 2 && cellIndex > 0 && cellIndex <= playerCount) {
                 // 収支行
@@ -370,17 +281,9 @@ React.useEffect(() => {
           })}
           textStyle={styles.text}
         />
-        {/* <Modal
-          animationType="slide"
-          transparent={false}
-          visible={keyboardVisible}
-          onRequestClose={() => setKeyboardVisible(false)}
-        >
-          <CustomKeyboard onKeyPress={handleKeyPress} />
-        </Modal> */}
 
       </Table>
-      {/* 広告バナーエリア */}
+
       <View style={styles.banner}>
         <Text style={styles.advertisementText}>広告</Text>
       </View>

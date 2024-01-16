@@ -9,6 +9,8 @@ import HistoryScreen from './src/screens/HistoryScreen';
 import SelectGameScreen from './src/screens/SelectGameScreen';
 import AccountScreen from './src/screens/AccountScreen';
 import InputScoreScreen from './src/screens/InputScoreScreen';
+import InputHaveScoreScreen from './src/screens/InputHaveScoreScreen';
+
 import RuleScreen from './src/screens/RuleScreen';
 
 
@@ -22,6 +24,7 @@ const SelectGameStackNavigator = () => (
   <Stack.Navigator initialRouteName="SelectGameScreen">
     <Stack.Screen name="SelectGame" component={SelectGameScreen} />
     <Stack.Screen name="InputScoreScreen" component={InputScoreScreen} />
+    <Stack.Screen name="InputHaveScoreScreen" component={InputHaveScoreScreen} />
     <Stack.Screen name="RuleScreen" component={RuleScreen} />
   </Stack.Navigator>
 );

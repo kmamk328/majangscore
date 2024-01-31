@@ -56,8 +56,8 @@ const InputScoreScreen = ({ route }: { route: any }) => {
     ['3', ...Array(playerCount).fill('')],
     ['4', ...Array(playerCount).fill('')],
   ]);
-  const [scores, setScores] = useState(Array.from({ length: 6 }, () => Array(playerCount).fill(0)));
-  const [chips, setChips] = useState(Array(playerCount).fill(0));
+  const [scores, setScores] = useState(Array.from({ length: 6 }, () => Array(playerCount).fill('')));
+  const [chips, setChips] = useState(Array(playerCount).fill(''));
 
   // テキスト変更時のハンドラ
   const handleChangeText = (text: string, row: number, col: number) => {
@@ -78,6 +78,7 @@ const InputScoreScreen = ({ route }: { route: any }) => {
     setKeyboardVisible(false); // キー入力後にキーボードを非表示
 
   };
+
 
 
 
@@ -103,16 +104,16 @@ const InputScoreScreen = ({ route }: { route: any }) => {
 
 
   const [tableFooter, setTableFooter] = useState([
-    ['計', ...Array(playerCount).fill('0')],
-    ['チップ', ...Array(playerCount).fill('0')],
-    ['収支', ...Array(playerCount).fill('0')],
-    ['場代込', ...Array(playerCount).fill('0')]
+    ['計', ...Array(playerCount).fill(0)],
+    ['チップ', ...Array(playerCount).fill('')],
+    ['収支', ...Array(playerCount).fill(0)],
+    ['場代込', ...Array(playerCount).fill(0)]
   ]);
 
   // プレイヤーごとのスコア合計を計算して tableFooter ステートを更新
 React.useEffect(() => {
-  const playerScores = Array(playerCount).fill(0);
-  const playerChips = Array(playerCount).fill(0);
+  const playerScores = Array(playerCount).fill('');
+  const playerChips = Array(playerCount).fill('');
 
   tableData.forEach((rowData) => {
     for (let i = 1; i <= playerCount; i++) {
@@ -122,11 +123,11 @@ React.useEffect(() => {
   });
 
   const updatedTableFooter = [...tableFooter];
-  updatedTableFooter[0] = ['計', ...playerScores.map(String)];
-  updatedTableFooter[1] = ['チップ', ...playerChips.map(String)];
+  updatedTableFooter[0] = ['計', ...playerScores.map(Number)];
+  updatedTableFooter[1] = ['チップ', ...playerChips.map(Number)];
 
-  const calculatedNet = playerScores.map((score, i) => score + playerChips[i] * 2);
-  updatedTableFooter[2] = ['収支', ...calculatedNet.map(String)];
+  const calculatedNet = playerScores.map((score, i) => parseInt(score) + parseInt(playerChips[i]) * 2);
+  updatedTableFooter[2] = ['収支', ...calculatedNet.map(Number)];
 
 
   setTableFooter(updatedTableFooter);
@@ -164,6 +165,25 @@ React.useEffect(() => {
     setTableHead(newTableHead);
   };
 
+  const handleInputChange = (text, rowIndex, cellIndex) => {
+    let newRow = [...tableData[rowIndex]];
+    newRow[cellIndex] = text;
+
+    // 入力された3つのセルの値を確認
+    const filledCells = newRow.slice(1, 4).filter(cell => cell.trim() !== '');
+    if (filledCells.length === 3) {
+      // 合計が0になるように4番目のセルを計算
+      const total = filledCells.reduce((sum, value) => sum + parseFloat(value), 0);
+      newRow[4] = (-total).toString();
+    }
+
+    // 更新した行でtableDataを更新
+    const newTableData = [...tableData];
+    newTableData[rowIndex] = newRow;
+    setTableData(newTableData);
+  };
+
+
   const renderEditableTableHead = () => {
     return tableHead.map((header, index) => {
       if (header === 'No.') {
@@ -190,14 +210,15 @@ React.useEffect(() => {
         const score = scores[rowIndex] && scores[rowIndex][cellIndex - 1];
         const scoreValue = score !== undefined && !isNaN(score)
           ? score.toString()
-          : '0';
+          : '9999';
         const handleTextChange = (value: string) => {
           // 符号で始まる入力を許可するロジック
           if (value === '-' || value === '+') {
             handleScoreChange(rowIndex, cellIndex - 1, value);
           } else if (!isNaN(value) && value.trim() !== '') {
             // 数値のみを処理
-            handleScoreChange(rowIndex, cellIndex - 1, parseInt(value, 10).toString());
+
+            handleScoreChange(rowIndex, cellIndex - 1, value);
           }
           // それ以外の場合（無効な入力）では何もしない
         };
@@ -207,8 +228,6 @@ React.useEffect(() => {
             style={styles.input}
             keyboardType={Platform.OS === 'ios' ? 'numbers-and-punctuation' : 'numeric'}
             onChangeText={handleTextChange}
-            // onChangeText={(value) => setTemporaryValue(value)} // 一時的な値を状態に保存
-            // onEndEditing={() => handleTextChange(temporaryValue)} // 入力終了時に値を処理
             value={scoreValue}
             onFocus={() => setActiveInput({ rowIndex, cellIndex: cellIndex - 1 })}
           />
@@ -253,17 +272,17 @@ React.useEffect(() => {
               if (rowIndex === 0 && cellIndex > 0 && cellIndex <= playerCount) {
                 // 各プレイヤーのスコア合計を計算
                 const totalScore = scores.reduce((sum, current) => sum + current[cellIndex - 1], 0);
-                return isNaN(totalScore) ? '0' : totalScore.toString();
+                return isNaN(totalScore) ? 0 : totalScore;
               } else if (rowIndex === 1 && cellIndex > 0 && cellIndex <= playerCount) {
                 //チップ行
-                // chips[cellIndex - 1] が存在することを確認してから文字列に変換
-                const chipValue = chips[cellIndex - 1] !== undefined ? chips[cellIndex - 1].toString() : '0';
+                // chips[cellIndex - 1] が存在することを確認
+                const chipValue = chips[cellIndex - 1] !== undefined ? chips[cellIndex - 1] : 0;
                 return (
                   <TextInput
                     style={styles.input}
                     keyboardType={Platform.OS === 'ios' ? 'numbers-and-punctuation' : 'numeric'}
                     onChangeText={(value) => handleChipChange(cellIndex - 1, value)}
-                    value={chipValue !== undefined && !isNaN(chipValue) ? chipValue.toString() : '0'}
+                    value={chipValue !== undefined && !isNaN(chipValue) ? chipValue : 0}
                     />
 
                 );
@@ -271,8 +290,8 @@ React.useEffect(() => {
                 // 収支行
                 const totalScore = scores.reduce((sum, current) => sum + current[cellIndex - 1], 0);
                 const chipValue = chips[cellIndex - 1] !== undefined ? chips[cellIndex - 1] : 0;
-                const netValue = totalScore + chipValue * 2;
-                return isNaN(netValue) ? '0' : netValue.toString();
+                const netValue = Number(totalScore) + Number(chipValue) * 2;
+                return isNaN(netValue) ? 0 : netValue;
               } else {
                 //場代込は後で実装する
                 return cell;

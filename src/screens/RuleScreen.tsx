@@ -1,6 +1,6 @@
 import React, { useState, Component, useEffect } from 'react';
 import { Select, FormControl, CheckIcon, WarningOutlineIcon, Center } from "native-base";
-import { View, Text, SafeAreaView, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, SafeAreaView, StyleSheet, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import firebase from 'firebase/app';
 import { initializeApp, getApps } from 'firebase/app';
@@ -30,6 +30,9 @@ const RuleScreen = () => {
   const [selectedChip, setSelectedChip] = useState('');
 
   const [deviceId, setDeviceId] = useState('');
+
+  const [number, onChangeNumber] = React.useState('');
+
 
   // useEffect(() => {
   //   const fetchDeviceId = async () => {
@@ -220,6 +223,17 @@ const RuleScreen = () => {
         </FormControl.ErrorMessage>
       </FormControl>
 
+      <FormControl w="3/4" maxW="300">
+      <FormControl.Label>ゲーム代</FormControl.Label>
+      <TextInput
+        style={styles.input}
+        onChangeText={onChangeNumber}
+        value={number}
+        placeholder="Game Fee"
+        keyboardType="numeric"
+      />
+      </FormControl>
+
       {/* <TouchableOpacity style={styles.saveRuleBanner} onPress={saveRule}> */}
       <TouchableOpacity style={styles.saveRuleBanner} onPress={saveToFirebase}>
         <Text style={styles.saveRuleText}>ルール設定を保存</Text>
@@ -248,6 +262,12 @@ const styles = StyleSheet.create({
   saveRuleText: {
     color: '#007bff', // 青色のテキスト
     fontSize: 16
+  },
+  input: {
+    height: 40,
+    margin: 12,
+    borderWidth: 1,
+    padding: 10,
   },
 });
 
